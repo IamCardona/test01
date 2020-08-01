@@ -51,7 +51,7 @@ const Header = () => {
 
               <div style={{ display: "flex", alignItems: "center", paddingBottom: "0.5rem" }}>
 
-                <div style={{ margin: "1rem" }}>
+                <div>
                   <User />
                 </div>
 

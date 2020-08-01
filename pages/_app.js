@@ -9,4 +9,13 @@ export default function({ Component, pageProps }) {
     )
 }
 
-// Aviso de privacidad
+/**
+ * 
+ * COSAS PENDIENTES QUE HACER
+ * 
+ *      - Aviso de privacidad
+ *      - Pagina 404
+ *      -   VERIFICAR SI EL TOKEN CAMBIA
+ * 
+ *
+ */

@@ -24,6 +24,20 @@
     .login-container {
         width: 100%;
     }
+
+    .p-1 {
+        padding: 1rem;
+    }
+
+    .fs-12 {
+        font-size: 1.4rem;
+    }
+}
+
+@media (max-width: 450px) {
+    .p-1 {
+        padding: 1rem;
+    }
 }
 
 .click:hover {

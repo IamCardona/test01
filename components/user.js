@@ -4,27 +4,36 @@ import { Popover } from 'antd'
 import { useRouter } from 'next/router'
 
 import firebase from '../firebaseConfig'
+import { request } from 'graphql-request'
 
 export default function() {
     const router = useRouter()
-
     const [user, setUser] = useState(null)
 
-    useEffect(() => {
-        async function getUser() {
-            try {
-                await firebase.auth().onAuthStateChanged(function(user) {
-                    if(user) {
-                        setUser(user.email)
-                    } else {
-                        setUser(null)
-                    }
-                })
-            } catch(e) {
-                console.log(e)
-            }
+    const query = `
+    query usuario($input: IdInput!) {
+        getUser(input: $input) {
+            name
+            email
         }
-        getUser()
+    }
+    `
+
+    useEffect(() => {
+        firebase.auth().onAuthStateChanged(function(userToken) {
+            if(userToken) {
+                const variables = {
+                    input: {
+                        id: userToken.uid
+                    }
+                }
+                request('http://localhost:4000/graphql', query, variables).then((data) => {
+                    if(data) setUser(data.getUser.name)
+                })
+            } else {
+                setUser(null)
+            }
+        })
     }, [])
 
     const content = (
@@ -45,12 +54,13 @@ export default function() {
     )
 
     const title = () => {
-        console.log("title")
         if(user) return <div style={{ color: "#93a9b5" }}>{user}</div>
     }
     return(
         <Popover content={content} placement="bottom" title={title()}>
-            <UserOutlined style={{ fontSize: "1.5rem", color: "#93a9b5" }} className="click" />
+            <div style={{ padding: "1rem" }}>
+                <UserOutlined style={{ fontSize: "1.5rem", color: "#93a9b5" }} className="click" />
+            </div>
         </Popover>
     )
 }

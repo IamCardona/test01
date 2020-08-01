@@ -1,90 +1,149 @@
 import React, { useState } from 'react'
 import { useRouter } from 'next/router'
 
-import { useFormik } from 'formik'
-import * as Yup from 'yup'
+import { Form, Input, Button, Alert, Spin } from 'antd'
+import { UserOutlined, LockOutlined, MailOutlined } from '@ant-design/icons'
+import Link from 'next/link'
 
 import firebase from '../../firebaseConfig'
 
+import { request } from 'graphql-request'
+
 export default function() {
     const router = useRouter()
+    const [error, setError] = useState(false)
+    const [loading, setLoading] = useState(false)
 
-    const [error, setError] = useState(null)
+    const query = `
+    mutation newUserTest($input: NewUserInput!) {
+        newUser(input: $input)
+      }
+    `
 
-    const formik = useFormik({
-        initialValues: {
-            email: '',
-            password: ''
-        },
-        validationSchema: Yup.object({
-            email: Yup.string()
-                .email('El email no es valido')
-                .required('El email es oblogatorio'),
-            password: Yup.string()
-                .required('La contraseña es obligatoria')
-        }),
-        onSubmit: async valores => {
-            const { email, password } = valores
+    const onFinish = async values => {
+        const { email, password, usuario } = values;
             try {
+                setLoading(true)
+                setError(false)
                 await firebase.auth().createUserWithEmailAndPassword(email, password)
-                router.push('/');
             } catch(e) {
-                console.log(e)
+                setLoading(false)
+                if(e.code === "auth/email-already-in-use") {
+                    setError("Parece Que Ese Correo Electrónico Ya Esta En Uso!")
+                } else {
+                    setError("Ups!! Parece que algo salio mal!! :(")
+                }
             }
-        }
-    })
+            const id = await firebase.auth().currentUser.uid;
+            
+                const variables = {
+                    input: {
+                        name: usuario,
+                        id
+                    }
+                }
 
+                request('http://localhost:4000/graphql', query, variables).then((data) => {
+                    if(data) {
+                        return router.push('/user/login')
+                    }
+                })
+      };
     return(
-        <div>
-            <h1>Register</h1>
+        <div style={{ width: "100%", textAlign: "center"}}>
+            <div className="login-container" style={{ backgroundColor: "rgb(247, 247, 247)", position: "absolute", left: "50%", top: "50%",  transform: "translate(-50%, -50%)" }}>
+                <Spin spinning={loading}>
 
-            {error && (
                 <div>
-                    {error}
+                    <img style={{ marginTop: "3rem" }} src="/logo.png" alt="Logo" />
+                    <div style={{ marginTop: "1rem", fontSize: "1.4rem", color: "rgba(0, 0, 0, 0.65)" }}>Registrate en Tardan</div>
                 </div>
-            )}
 
-            <form onSubmit={formik.handleSubmit}>
+                {error && <Alert 
+                type="error" closable message={error} 
+                style={{ width: "80%", margin: "1rem auto 0 auto" }}
+                onClose={() => setError(false)} />}
 
-                <div>
-                    <label htmlFor="email">Email</label>
-                    <input
-                        id="email"
-                        type="email"
-                        placeholder="Email"
-                        onChange={formik.handleChange}
-                        onBlur={formik.handleBlur}
-                        value={formik.values.email}
+                <div style={{ width: "90%", textAlign: "center", margin: "0 auto" }}>
+
+                <Form
+                style={{ marginTop: "2rem" }}
+                name="normal_login"
+                className="login-form"
+                initialValues={{
+                    remember: true,
+                }}
+                onFinish={onFinish}
+                >
+
+                <Form.Item
+                    name="usuario"
+                    rules={[
+                    {
+                        required: true,
+                        message: 'Ingresa tu Nombre de Usuario!',
+                    }
+                    ]}
+                >
+                    <Input prefix={<UserOutlined className="site-form-item-icon" />} placeholder="Nombre de Usuario" className="p-1" />
+                </Form.Item>
+
+                <Form.Item
+                    name="email"
+                    rules={[
+                    {
+                        required: true,
+                        message: 'Ingresa tu Correo Electrónico!',
+                    },
+                    {
+                        type: 'email',
+                        message: 'Ingresa un Correo Electrónico Valido!'
+                    }
+                    ]}
+                >
+                    <Input prefix={<MailOutlined />} placeholder="Correo Electrónico" className="p-1" />
+                </Form.Item>
+
+                <Form.Item
+                    name="password"
+                    rules={[
+                    {
+                        required: true,
+                        message: 'Ingresa tu Contraseña!',
+                    },
+                    ]}
+                >
+                    <Input
+                    prefix={<LockOutlined className="site-form-item-icon p-1" />}
+                    type="password"
+                    placeholder="Contraseña "
                     />
+                </Form.Item>
 
-                    {formik.touched.email && formik.errors.email ? (
-                        <div>
-                            <h1>{formik.errors.email}</h1>
-                        </div> 
-                    ) : null}
+                <Form.Item>
+                    <Button type="primary" htmlType="submit" className="login-form-button" style={{ width: "80%" }}>
+                        Registrarse!
+                    </Button>
+                </Form.Item>
+
+                <Form.Item>
+                    <Link href="/user/reset">
+                        <a className="login-form-forgot fs-12">
+                            Olvidaste tu Contraseña?
+                        </a>
+                    </Link>
+                    <br className="fs-12" /> O <br />
+                    <Link  href="/user/login">
+                        <a className="fs-12">
+                            Iniciar Sesión!
+                        </a>
+                    </Link>
+                </Form.Item>
+
+                </Form>
                 </div>
-
-                <div>
-                    <label htmlFor="password">Password</label>
-                    <input
-                        id="password"
-                        type="password"
-                        placeholder="Password"
-                        onChange={formik.handleChange}
-                        onBlur={formik.handleBlur}
-                        value={formik.values.password}
-                    />
-
-                    {formik.touched.password && formik.errors.password ? (
-                        <div>
-                            <h1>{formik.errors.password}</h1>
-                        </div> 
-                    ) : null}
-                </div>
-
-                <input type="submit" value="Submit" />
-
-            </form>
+                </Spin>
+            </div>
         </div>
     )
 }
