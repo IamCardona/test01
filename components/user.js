@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { UserOutlined } from '@ant-design/icons'
-import { Popover } from 'antd'
+import { Popover, Button } from 'antd'
 import { useRouter } from 'next/router'
 
 import firebase from '../firebaseConfig'
@@ -27,8 +27,8 @@ export default function() {
                         id: userToken.uid
                     }
                 }
-                request('http://localhost:4000/graphql', query, variables).then((data) => {
-                    if(data) setUser(data.getUser.name)
+                request('https://test01-tardan.herokuapp.com/graphql', query, variables).then((data) => {
+                    if(data.getUser.name) setUser(data.getUser.name)
                 })
             } else {
                 setUser(null)
@@ -58,9 +58,9 @@ export default function() {
     }
     return(
         <Popover content={content} placement="bottom" title={title()}>
-            <div style={{ padding: "1rem" }}>
+            <Button style={{ border: "none" }}>
                 <UserOutlined style={{ fontSize: "1.5rem", color: "#93a9b5" }} className="click" />
-            </div>
+            </Button>
         </Popover>
     )
 }

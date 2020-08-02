@@ -20,35 +20,34 @@ export default function() {
       }
     `
 
-    const onFinish = async values => {
+    const onFinish = values => {
         const { email, password, usuario } = values;
-            try {
-                setLoading(true)
-                setError(false)
-                await firebase.auth().createUserWithEmailAndPassword(email, password)
-            } catch(e) {
-                setLoading(false)
-                if(e.code === "auth/email-already-in-use") {
-                    setError("Parece Que Ese Correo Electrónico Ya Esta En Uso!")
-                } else {
-                    setError("Ups!! Parece que algo salio mal!! :(")
+        
+        setLoading(true)
+        setError(false)
+        firebase.auth().createUserWithEmailAndPassword(email, password).then((data) => {
+            const variables = {
+                input: {
+                    id: data.user.uid,
+                    name: usuario
                 }
             }
-            const id = await firebase.auth().currentUser.uid;
-            
-                const variables = {
-                    input: {
-                        name: usuario,
-                        id
-                    }
-                }
 
-                request('http://localhost:4000/graphql', query, variables).then((data) => {
-                    if(data) {
-                        return router.push('/user/login')
-                    }
-                })
+            request('https://test01-tardan.herokuapp.com/graphql', query, variables).then((data) => {
+                if(data) return router.push('/user/login')
+            })
+
+        })
+        .catch(function(e) {
+            setLoading(false)
+            if(e.code === "auth/email-already-in-use") {
+                setError("Parece Que Ese Correo Electrónico Ya Esta En Uso!")
+            } else {
+                setError("Ups!! Parece que algo salio mal!! :(")
+            }
+        })
       };
+
     return(
         <div style={{ width: "100%", textAlign: "center"}}>
             <div className="login-container" style={{ backgroundColor: "rgb(247, 247, 247)", position: "absolute", left: "50%", top: "50%",  transform: "translate(-50%, -50%)" }}>

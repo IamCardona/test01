@@ -16,9 +16,11 @@ export default function() {
         const { email, password } = values;
         setError(false)
         setLoading(true)
-        firebase.auth().signInWithEmailAndPassword(email, password).then(() => {
+        firebase.auth().signInWithEmailAndPassword(email, password)
+        .then(() => {
             router.push('/')
-        }).catch(function(e) {
+        })
+        .catch(function(e) {
             setError(true)
             setLoading(false)
         })

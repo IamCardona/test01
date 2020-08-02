@@ -14,19 +14,18 @@ export default function() {
 
     const onFinish = async values => {
         const { email } = values;
-            try {
-                setError(false)
-                setLoading(true)
-                await firebase.auth().sendPasswordResetEmail(email)
-                setLoading(false)
-                success()
-                setTimeout(() => {
-                    router.push('/user/login')
-                }, 2000)
-            } catch(e) {
-                setError(true)
-                setLoading(false)
-            }
+        setError(false)
+        setLoading(true)
+        firebase.auth().sendPasswordResetEmail(email).then((data) => {
+            setLoading(false)
+            success()
+            setTimeout(() => {
+                router.push('/user/login')
+            }, 2000)
+        }).catch((e) => {
+            setError(true)
+                setLoading(false)    
+        })      
       };
 
       const success = () => {
