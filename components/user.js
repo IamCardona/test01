@@ -57,8 +57,8 @@ export default function() {
         if(user) return <div style={{ color: "#93a9b5" }}>{user}</div>
     }
     return(
-        <Popover content={content} placement="bottom" title={title()}>
-            <Button style={{ border: "none" }}>
+        <Popover content={content} placement="bottom" title={title()} trigger="click">
+            <Button style={{ border: "none", boxShadow: "none" }}>
                 <UserOutlined style={{ fontSize: "1.5rem", color: "#93a9b5" }} className="click" />
             </Button>
         </Popover>
